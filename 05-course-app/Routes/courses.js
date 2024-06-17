@@ -13,7 +13,7 @@ const courseSchema = z.object({
 router.get("/", async (req, res) => {
   try {
     const courses = await Course.find();
-    res.send(courses);
+    res.json(courses);
   } catch (error) {
     res.status(500).send(error.message);
   }
@@ -24,9 +24,9 @@ router.post("/", async (req, res) => {
     const validatedData = courseSchema.parse(req.body);
     const course = new Course(validatedData);
     const savedCourse = await course.save();
-    res.send(savedCourse);
+    res.status(201).json(savedCourse);
   } catch (error) {
-    res.status(400).send(error.errors);
+    res.status(400).json({ error: error.errors });
   }
 });
 
@@ -39,11 +39,11 @@ router.put("/:id", async (req, res) => {
       { new: true }
     );
     if (!course) {
-      return res.status(404).send("The course with the given ID was not found");
+      return res.status(404).send("Course not found");
     }
-    res.send(course);
+    res.json(course);
   } catch (error) {
-    res.status(400).send(error.errors);
+    res.status(400).json({ error: error.errors });
   }
 });
 
@@ -51,9 +51,9 @@ router.delete("/:id", async (req, res) => {
   try {
     const course = await Course.findByIdAndRemove(req.params.id);
     if (!course) {
-      return res.status(404).send("The course with the given ID was not found");
+      return res.status(404).send("Course not found");
     }
-    res.send(course);
+    res.json(course);
   } catch (error) {
     res.status(500).send(error.message);
   }
@@ -63,9 +63,9 @@ router.get("/:id", async (req, res) => {
   try {
     const course = await Course.findById(req.params.id);
     if (!course) {
-      return res.status(404).send("The course with the given ID was not found");
+      return res.status(404).send("Course not found");
     }
-    res.send(course);
+    res.json(course);
   } catch (error) {
     res.status(500).send(error.message);
   }

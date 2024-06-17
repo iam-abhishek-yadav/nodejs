@@ -2,21 +2,17 @@ const express = require("express");
 const router = express.Router();
 const Category = require("../models/categories");
 const { z } = require("zod");
-const mongoose = require("mongoose");
 
 const categorySchema = z.object({
-  name: z
-    .string()
-    .min(3)
-    .refine((data) => data.length > 0, {
-      message: "Name is required",
-    }),
+  name: z.string().min(3).max(255).refine((data) => data.trim().length > 0, {
+    message: "Name is required",
+  }),
 });
 
 router.get("/", async (req, res) => {
   try {
     const categories = await Category.find();
-    res.send(categories);
+    res.json(categories);
   } catch (error) {
     res.status(500).send(error.message);
   }
@@ -27,9 +23,9 @@ router.post("/", async (req, res) => {
     const validatedData = categorySchema.parse(req.body);
     const category = new Category({ name: validatedData.name });
     const savedCategory = await category.save();
-    res.send(savedCategory);
+    res.status(201).json(savedCategory);
   } catch (error) {
-    res.status(400).send(error.errors);
+    res.status(400).json({ error: error.errors });
   }
 });
 
@@ -40,11 +36,10 @@ router.put("/:id", async (req, res) => {
       { name: req.body.name },
       { new: true }
     );
-    if (!category)
-      return res
-        .status(404)
-        .send("The category with the given ID was not found");
-    res.send(category);
+    if (!category) {
+      return res.status(404).send("Category not found");
+    }
+    res.json(category);
   } catch (error) {
     res.status(500).send(error.message);
   }
@@ -53,11 +48,10 @@ router.put("/:id", async (req, res) => {
 router.delete("/:id", async (req, res) => {
   try {
     const category = await Category.findByIdAndRemove(req.params.id);
-    if (!category)
-      return res
-        .status(404)
-        .send("The category with the given ID was not found");
-    res.send(category);
+    if (!category) {
+      return res.status(404).send("Category not found");
+    }
+    res.json(category);
   } catch (error) {
     res.status(500).send(error.message);
   }
@@ -66,11 +60,10 @@ router.delete("/:id", async (req, res) => {
 router.get("/:id", async (req, res) => {
   try {
     const category = await Category.findById(req.params.id);
-    if (!category)
-      return res
-        .status(404)
-        .send("The category with the given ID was not found");
-    res.send(category);
+    if (!category) {
+      return res.status(404).send("Category not found");
+    }
+    res.json(category);
   } catch (error) {
     res.status(500).send(error.message);
   }
